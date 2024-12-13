@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Pencarian & Rekomendasi Buku</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        /* ... (style yang sama) ... */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><b>Sistem Pencarian & Rekomendasi Buku</b></h1>
+
+                        <!-- ... (marquee content) ... -->
+                   <!-- Teks Berjalan Berita Terbaru -->
+        <div class="news-ticker">
+            <marquee behavior="scroll" direction="left" scrollamount="12">
+<span>🔴 Karya Misbakhul Fuad UAS Information Retrival</span>
+<span>🔴 Universitas Nahdlatul Ulama Sunan Giri Bojonegoro</span>
+<span>🔴 Membaca adalah jendela dunia.</span>
+<span>🔴 Buku adalah teman terbaik dalam kesendirian.</span>
+<span>🔴 Literasi membuka pintu menuju kebijaksanaan.</span>
+<span>🔴 Kata-kata memiliki kekuatan untuk mengubah dunia.</span>
+<span>🔴 Membaca menambah wawasan, menulis menambah kreativitas.</span>
+<span>🔴 Buku adalah investasi jangka panjang.</span>
+<span>🔴 Bacalah, karena ilmu ada di dalamnya.</span>
+<span>🔴 Satu buku, sejuta inspirasi.</span>
+<span>🔴 Membaca adalah latihan bagi pikiran.</span>
+<span>🔴 Literasi memperkaya jiwa.</span>
+<span>🔴 Setiap buku adalah dunia baru untuk dijelajahi.</span>
+<span>🔴 Pendidikan dimulai dari membaca.</span>
+<span>🔴 Berliterasi adalah memperkaya pemikiran.</span>
+<span>🔴 Buku memberi kita kehidupan kedua.</span>
+<span>🔴 Kata adalah pelita dalam kegelapan.</span>
+<span>🔴 Literasi menciptakan manusia beradab.</span>
+<span>🔴 Dengan membaca, kita mengenal dunia tanpa batas.</span>
+<span>🔴 Buku adalah teman setia yang tak pernah meninggalkan.</span>
+<span>🔴 Literasi membangun karakter bangsa.</span>
+<span>🔴 Membaca adalah fondasi bagi masa depan yang cerah.</span>
+<span>🔴 Menulis adalah jejak abadi di hati pembaca.</span>
+<span>🔴 Dunia bisa berubah dengan kata-kata.</span>
+<span>🔴 Literasi adalah senjata yang paling ampuh.</span>
+<span>🔴 Belajar tanpa henti, membaca tanpa lelah.</span>
+<span>🔴 Bacalah untuk tumbuh, menulislah untuk berkarya.</span>
+<span>🔴 Buku adalah gerbang menuju kebijaksanaan.</span>
+<span>🔴 Dengan literasi, mimpi menjadi nyata.</span>
+<span>🔴 Jadikan membaca sebagai gaya hidup.</span>
+<span>🔴 Setiap kata memiliki makna mendalam.</span>
+<span>🔴 Literasi adalah warisan untuk generasi selanjutnya.</span>
+<span>🔴 Semakin banyak membaca, semakin luas wawasan.</span>
+<span>🔴 Buku adalah pelabuhan bagi jiwa yang haus akan ilmu.</span>
+<span>🔴 Kata adalah kekuatan yang tiada tanding.</span>
+<span>🔴 Literasi menjadikan kita manusia seutuhnya.</span>
+<span>🔴 Satu buku dapat mengubah hidup kita.</span>
+<span>🔴 Menulis adalah menghidupkan kata-kata.</span>
+<span>🔴 Literasi menghubungkan manusia dengan sejarah.</span>
+<span>🔴 Ilmu tanpa batas berasal dari buku.</span>
+<span>🔴 Kata-kata memiliki kekuatan untuk menginspirasi.</span>
+<span>🔴 Literasi adalah dasar peradaban yang maju.</span>
+<span>🔴 Buku adalah guru yang tak pernah marah.</span>
+<span>🔴 Belajar dari pengalaman, membaca dari buku.</span>
+<span>🔴 Literasi menciptakan keajaiban dalam kehidupan.</span>
+<span>🔴 Kata-kata yang baik adalah investasi jangka panjang.</span>
+<span>🔴 Membaca adalah hak, menulis adalah tanggung jawab.</span>
+<span>🔴 Dalam literasi, kita menemukan arti hidup.</span>
+<span>🔴 Buku memberi warna dalam hidup kita.</span>
+<span>🔴 Literasi adalah pintu menuju masa depan yang cerah.</span>
+<span>🔴 Membaca hari ini, pemimpin esok hari.</span>
+
+            </marquee>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" class="search-form">
+            <input type="text" name="keyword" placeholder="Masukan Kata Kunci, Penulis, Judul Buku, atau ISBN" value="{{ keyword }}" required>
+            <select name="search_type">
+                <option value="all" {% if search_type == 'all' %}selected{% endif %}>Semua</option>
+                <option value="title" {% if search_type == 'title' %}selected{% endif %}>Judul</option>
+                <option value="isbn" {% if search_type == 'isbn' %}selected{% endif %}>ISBN</option>
+                <option value="author" {% if search_type == 'author' %}selected{% endif %}>Penulis</option>
+            </select>
+            <button type="submit">Cari</button>
+        </form>
+
+        <h2>Hasil Pencarian</h2>
+        {% if total_items %}
+            <p>Ditemukan {{ total_items }} hasil</p>
+        {% endif %}
+
+        <nav class="pagination">
+            {% if total_pages > 1 %}
+                {% set start_page = [page - 2, 1]|max %}
+                {% set end_page = [start_page + 4, total_pages]|min %}
+                {% set start_page = [end_page - 4, 1]|max %}
+        
+                {% if page > 1 %}
+                    <a href="{{ url_for('pagination', page=page-1, keyword=keyword, search_type=search_type) }}">Previous</a>
+                {% endif %}
+        
+                {% if start_page > 1 %}
+                    <a href="{{ url_for('pagination', page=1, keyword=keyword, search_type=search_type) }}">1</a>
+                    {% if start_page > 2 %}
+                        <span>...</span>
+                    {% endif %}
+                {% endif %}
+        
+                {% for p in range(start_page, end_page + 1) %}
+                    {% if p == page %}
+                        <span class="current-page">{{ p }}</span>
+                    {% else %}
+                        <a href="{{ url_for('pagination', page=p, keyword=keyword, search_type=search_type) }}">{{ p }}</a>
+                    {% endif %}
+                {% endfor %}
+        
+                {% if end_page < total_pages %}
+                    {% if end_page < total_pages - 1 %}
+                        <span>...</span>
+                    {% endif %}
+                    <a href="{{ url_for('pagination', page=total_pages, keyword=keyword, search_type=search_type) }}">{{ total_pages }}</a>
+                {% endif %}
+        
+                {% if page < total_pages %}
+                    <a href="{{ url_for('pagination', page=page+1, keyword=keyword, search_type=search_type) }}">Next</a>
+                {% endif %}
+            {% endif %}
+        </nav>
+
+        <ul>
+            {% for book in books %}
+                <li>
+                    <strong>{{ book.title }}</strong><br>
+                    {% if book.image_links and book.image_links.thumbnail %}
+                        <img src="{{ book.image_links.thumbnail }}" alt="Cover of {{ book.title }}" class="book-cover">
+                    {% else %}
+                        <p>Gambar tidak tersedia</p>
+                    {% endif %}
+                    <br>
+                    <em>Penulis: {{ book.authors|join(', ') }}</em><br>
+                    <p><strong>ISBN:</strong> {{ book.isbn if book.isbn else 'Tidak tersedia' }}</p>
+                    <p><strong>Penerbit:</strong> {{ book.publisher }}</p>
+                    <p><strong>Tanggal Terbit:</strong> {{ book.published_date }}</p>
+                    <p><strong>Jumlah Halaman:</strong> {{ book.page_count }}</p>
+                    <p><strong>Kategori:</strong> {{ book.categories|join(', ') }}</p>
+                    <div class="description">
+                        <strong>Deskripsi:</strong><br>
+                        {{ book.description[:150] if book.description else 'Deskripsi tidak tersedia' }}
+                        {% if book.description and book.description|length > 150 %}...{% endif %}
+                    </div>
+                    <button class="preview-btn" 
+                            data-title="{{ book.title }}" 
+                            data-authors="{{ book.authors|join(', ') }}" 
+                            data-description="{{ book.description }}" 
+                            data-link="{{ book.info_link }}">Preview</button>
+                </li>
+            {% endfor %}
+        </ul>
+
+        <!-- Modal -->
+        <div id="bookModal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2 id="modalTitle"></h2>
+                <p id="modalAuthors"></p>
+                <p id="modalDescription"></p>
+                <a id="modalLink" href="#" target="_blank">Informasi Lainnya</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $('.preview-btn').click(function() {
+                $('#modalTitle').text($(this).data('title'));
+                $('#modalAuthors').text('Penulis: ' + $(this).data('authors'));
+                $('#modalDescription').text($(this).data('description'));
+                $('#modalLink').attr('href', $(this).data('link'));
+                $('#bookModal').show();
+            });
+
+            $('.close').click(function() {
+                $('#bookModal').hide();
+            });
+
+            $(window).click(function(event) {
+                if ($(event.target).is('#bookModal')) {
+                    $('#bookModal').hide();
+                }
+            });
+        });
+    </script>
+    <nav class="pagination">
+        {% if total_pages > 1 %}
+            {% set start_page = [page - 2, 1]|max %}
+            {% set end_page = [start_page + 4, total_pages]|min %}
+            {% set start_page = [end_page - 4, 1]|max %}
+    
+            {% if page > 1 %}
+                <a href="{{ url_for('pagination', page=page-1, keyword=keyword, search_type=search_type) }}">Previous</a>
+            {% endif %}
+    
+            {% if start_page > 1 %}
+                <a href="{{ url_for('pagination', page=1, keyword=keyword, search_type=search_type) }}">1</a>
+                {% if start_page > 2 %}
+                    <span>...</span>
+                {% endif %}
+            {% endif %}
+    
+            {% for p in range(start_page, end_page + 1) %}
+                {% if p == page %}
+                    <span class="current-page">{{ p }}</span>
+                {% else %}
+                    <a href="{{ url_for('pagination', page=p, keyword=keyword, search_type=search_type) }}">{{ p }}</a>
+                {% endif %}
+            {% endfor %}
+    
+            {% if end_page < total_pages %}
+                {% if end_page < total_pages - 1 %}
+                    <span>...</span>
+                {% endif %}
+                <a href="{{ url_for('pagination', page=total_pages, keyword=keyword, search_type=search_type) }}">{{ total_pages }}</a>
+            {% endif %}
+    
+            {% if page < total_pages %}
+                <a href="{{ url_for('pagination', page=page+1, keyword=keyword, search_type=search_type) }}">Next</a>
+            {% endif %}
+        {% endif %}
+    </nav>
+</body>
+</html>
